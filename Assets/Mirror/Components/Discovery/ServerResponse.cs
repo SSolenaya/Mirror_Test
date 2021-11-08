@@ -14,5 +14,11 @@ namespace Mirror.Discovery
 
         // Prevent duplicate server appearance when a connection can be made via LAN on multiple NICs
         public long serverId;
+
+        public override string ToString()
+        {
+            var s = "IP: " + EndPoint + "\n" + "URL: " + uri + "\n" + "server ID: " + serverId;
+            return s;
+        }
     }
 }

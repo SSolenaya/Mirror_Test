@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Assets;
 using UnityEngine;
 using Mirror;
+using UnityEngine.Video;
 
 public enum Musicians
 {
@@ -19,10 +20,12 @@ public class PlayerTest : NetworkBehaviour
     private int health = 100;
     public NetworkIdentity playerIdentity;
 
+    //[SyncVar] public float videoTimeStamp;
     [SyncVar] public Musicians instrument;
-   // [SyncVar] public bool isServer;
+    [SyncVar] public string deviceID;
+    // [SyncVar] public bool isServer;
 
-   
+
 
     public struct Message : NetworkMessage
     {
@@ -32,6 +35,7 @@ public class PlayerTest : NetworkBehaviour
 
     public override void OnStartClient()
     {
+        
         playerIdentity = GetComponent<NetworkIdentity>();
         if (isServer && isClient)
         {
@@ -45,7 +49,7 @@ public class PlayerTest : NetworkBehaviour
         }
 
         ClientManager.inst.AddToPlayersList(this);
-
+        CmdSetupClientInfo();
 
     }
 
@@ -59,11 +63,7 @@ public class PlayerTest : NetworkBehaviour
         };
         NetworkServer.SendToAll(msg);
     }
-    public void SetupClient()
-    {
-        NetworkClient.RegisterHandler<Message>(OnMessage);
-        NetworkClient.Connect("localhost");
-    }
+   
     public void OnMessage(Message msg)
     {
         string txt = "OnScoreMessage " + msg.msgText + " " + msg.receivedNumber;
@@ -80,9 +80,14 @@ public class PlayerTest : NetworkBehaviour
     [Command]
     public void CmdSetInstrument(int num)
     {
-
         instrument = (Musicians) Enum.GetValues(typeof(Musicians)).GetValue(num);
+    }
 
+    [Command]
+    public void CmdSetupClientInfo()
+    {
+        deviceID = SystemInfo.deviceUniqueIdentifier;
+        MessageManager.inst.AddClientInfo(deviceID);
     }
 
     public void TakeDamage(int amount)
@@ -91,6 +96,7 @@ public class PlayerTest : NetworkBehaviour
         health -= amount;
         RpcDamage(amount);
     }
+
     [ClientRpc(includeOwner = false)]
     public void RpcDamage(int amount)
     {
@@ -115,5 +121,27 @@ public class PlayerTest : NetworkBehaviour
         MessageManager.inst.ShowMessage(txt);
     }
 
+    public void PlayVideo()
+    {
+        if (!isServer) return;
+        RpcPlayVideo();
+    }
 
+    [ClientRpc(includeOwner = true)]
+    public void RpcPlayVideo()
+    {
+        MessageManager.inst.PlayVideo();
+    }
+
+    public void PauseVideo()
+    {
+        if (!isServer) return;
+        RpcPauseVideo();
+    }
+
+    [ClientRpc(includeOwner = true)]
+    public void RpcPauseVideo()
+    {
+        MessageManager.inst.PauseVideo();
+    }
 }

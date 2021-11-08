@@ -61,6 +61,7 @@ namespace Mirror.Discovery
                     serverId = ServerId,
                     uri = transport.ServerUri()
                 };
+                
             }
             catch (NotImplementedException)
             {
