@@ -21,40 +21,57 @@ namespace Mirror.Discovery
             {
                 networkDiscovery = GetComponent<NetworkDiscovery>();
                 UnityEditor.Events.UnityEventTools.AddPersistentListener(networkDiscovery.OnServerFound, OnDiscoveredServer);
+                
                 UnityEditor.Undo.RecordObjects(new Object[] { this, networkDiscovery }, "Set NetworkDiscovery");
             }
         }
 #endif
 
-        void OnGUI()
+       //void OnGUI()
+       //{
+       //    if (NetworkManager.singleton == null)
+       //        return;
+       //
+       //    if (!NetworkClient.isConnected && !NetworkServer.active && !NetworkClient.active)
+       //        DrawGUI();
+       //
+       //    if (NetworkServer.active || NetworkClient.active)
+       //        StopButtons();
+       //}
+
+        public Dictionary<long, ServerResponse> GetDiscoveredServers()
         {
-            if (NetworkManager.singleton == null)
-                return;
+            return discoveredServers;
+        }
 
-            if (!NetworkClient.isConnected && !NetworkServer.active && !NetworkClient.active)
-                DrawGUI();
+        public void StartHost()
+        {
+            discoveredServers.Clear();
+            NetworkManager.singleton.StartHost();
+            networkDiscovery.AdvertiseServer();
+        }
 
-            if (NetworkServer.active || NetworkClient.active)
-                StopButtons();
+        public void FindServer()
+        {
+            discoveredServers.Clear();
+            networkDiscovery.StartDiscovery();
         }
 
         void DrawGUI()
         {
-            GUILayout.BeginArea(new Rect(10, 10, 450, 500));
+            return;
+            GUILayout.BeginArea(new Rect(10, 10, 300, 500));
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Find Servers"))
             {
-                discoveredServers.Clear();
-                networkDiscovery.StartDiscovery();
+                FindServer();
             }
 
             // LAN Host
             if (GUILayout.Button("Start Host"))
             {
-                discoveredServers.Clear();
-                NetworkManager.singleton.StartHost();
-                networkDiscovery.AdvertiseServer();
+                StartHost();
             }
 
             // Dedicated server
@@ -75,8 +92,14 @@ namespace Mirror.Discovery
             scrollViewPos = GUILayout.BeginScrollView(scrollViewPos);
 
             foreach (ServerResponse info in discoveredServers.Values)
+            {
                 if (GUILayout.Button(info.EndPoint.Address.ToString()))
+                {
                     Connect(info);
+                }
+                    
+            }
+               
 
             GUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -84,7 +107,7 @@ namespace Mirror.Discovery
 
         void StopButtons()
         {
-            GUILayout.BeginArea(new Rect(10, 50, 150, 50));
+            GUILayout.BeginArea(new Rect(30, 60, 150, 50));
 
             // stop host if host mode
             if (NetworkServer.active && NetworkClient.isConnected)
@@ -117,7 +140,7 @@ namespace Mirror.Discovery
             GUILayout.EndArea();
         }
 
-        void Connect(ServerResponse info)
+       public void Connect(ServerResponse info)
         {
             networkDiscovery.StopDiscovery();
             NetworkManager.singleton.StartClient(info.uri);

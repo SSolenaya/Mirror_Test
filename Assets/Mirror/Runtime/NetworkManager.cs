@@ -328,6 +328,10 @@ namespace Mirror
                 authenticator.OnStartClient();
                 authenticator.OnClientAuthenticated.AddListener(OnClientAuthenticated);
             }
+            else
+            {
+                Debug.LogError(" authenticator = null");
+            }
 
             // In case this is a headless client...
             ConfigureHeadlessFrameRate();
@@ -684,7 +688,7 @@ namespace Mirror
             }
             else
             {
-                //Debug.Log("NetworkManager created singleton (ForScene)");
+                Debug.Log("NetworkManager created singleton (ForScene)");
                 singleton = this;
             }
 

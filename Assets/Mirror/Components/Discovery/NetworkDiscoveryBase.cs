@@ -246,7 +246,11 @@ namespace Mirror.Discovery
         public void StartDiscovery()
         {
             if (!SupportedOnThisPlatform)
+            {
+                Debug.LogError("Network discovery not supported in this platform");
                 throw new PlatformNotSupportedException("Network discovery not supported in this platform");
+            }
+               
 
             StopDiscovery();
 
